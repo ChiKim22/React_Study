@@ -1,10 +1,10 @@
-import Header from "./components/Header";
+import Header from './components/Header';
 
 function App() {
   return (
     <div className="App">
       <h1>Hello from React</h1>
-      <Header title="Hello. Kim"/>
+      <Header title="Task Tracker"/>
     </div>
   );
 }

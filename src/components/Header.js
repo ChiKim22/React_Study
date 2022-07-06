@@ -1,4 +1,5 @@
 import React from 'react';
+import Button from './Button';
 
 // const Header = function() {
 //   return(
@@ -6,11 +7,16 @@ import React from 'react';
 //   )
 // }
 
-const Header = (props) => {
-    console.log(props.title)
+const Header = ({title}) => {
+
+    const onAdd = () => {
+        console.log("btn Clicked")
+    }
+
     return(
         <header className="header">
-            <h1>{props.title}</h1>
+            <h1>{title}</h1>
+            <Button text="Add" onAdd={onAdd}></Button>
         </header>
     )
 }
