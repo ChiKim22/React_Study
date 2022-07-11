@@ -4,7 +4,7 @@ const Button = ({text, onAdd}) => {
     return(
         <button onClick={onAdd} 
             style={{ backgroundColor: "green" }}
-            className='btn'>{text}</button>
+            className="btn">{text}</button>
     )
 }
 
