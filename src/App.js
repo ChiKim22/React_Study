@@ -1,54 +1,102 @@
-import { useState } from 'react';
-import Header from './components/Header';
-import Tasks from './components/Tasks';
+import Header from "./components/Header";
+import Tasks from "./components/Tasks";
+import React, { useEffect, useState } from 'react'
+import AddTask from "./components/AddTask";
+import Footer from "./components/Footer";
+import About from "./components/About";
+import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 
 function App() {
-  // const [count, setCount] = useState(0)
-  const [tasks, setTasks] = useState([ 
-    {
-        "id" : 1,
-        "text" : "Doctors Appointment",
-        "day" : "Feb 5th at 14:30",
-        "reminder" : true
-    }, 
-    {
-        "id" : 2,
-        "text" : "Meeting at school",
-        "day" : "Feb 6th at 15:30",
-        "reminder" : true
-    },
-    {
-        "id" : 3,
-        "text" : "Take a test",
-        "day" : "Feb 7th at 10:30",
-        "reminder" : false
-    }
-]);
+  const [tasks, setTasks] = useState([]);
 
-  // JSX Code
+  useEffect(() => {
+    fetchTasks();
+  }, [])
 
-  // const increaseCount = () => {
-  //   // setCount(count + 1);
-  //   setCount((prev) => {return prev + 1})
-  //   console.log(count);
-  // }
-
-  const onDelete = (taskId) => {
-    // tasks.filter((task)=>{return task.id !== taskId})
-    // setTasks(tasks.filter((task)=>task.id !== taskId));
-    setTasks((prevTasks)=>prevTasks.filter((task)=>task.id !== taskId));
-    console.log(tasks);
+  const fetchTasks = async () => {
+    const res = await fetch('http://localhost:3001/tasks')
+    const data = await res.json();
+    // console.log(data);
+    setTasks(data);
   }
 
-  return (
-    <div className="App">
-      <h1>Hello from React</h1>
-      <Header title="Task Tracker"/>
-      <Tasks tasks={tasks} onDelete={onDelete}/>
+  const deleteTask = async (id) => {
+    await fetch(`http://localhost:3001/tasks/${id}`, {
+      method: 'DELETE'
+    })
+    // console.log('delete', id);
+    setTasks(tasks.filter((task)=> task.id !== id))
+  }
 
-      {/* <h3>Counter : {count}</h3>
-      <button onClick={increaseCount}>+</button> */}
-    </div>
+  const toggleReminder = async (id) => {
+    const taskToToggle = await fetchTask(id)
+    const updTask = {...taskToToggle, reminder: !taskToToggle.reminder}
+
+    const res = await fetch(`http://localhost:3001/tasks/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-type': 'application/json'
+      },
+      body: JSON.stringify(updTask)
+    })
+
+    const data = await res.json();
+    
+    // console.log(id);
+    setTasks(tasks.map((task) => task.id === id ? {...task, reminder:data.reminder} : task))
+  }
+
+  const addTask = async (task) => {
+    const res = await fetch('http://localhost:3001/tasks', {
+      method: 'POST',
+      headers: {'Content-type': 'application/json'},
+      body : JSON.stringify(task)
+    })
+    // console.log(task)
+    // const id = Math.floor(Math.random() * 100000) + 1;
+    // const newTask = {id, ...task}
+
+    const data = await res.json()
+    setTasks([...tasks, data])
+  }
+
+  const fetchTask = async (id) => {
+    const res = await fetch(`http://localhost:3001/tasks/${id}`)
+    const data = await res.json();
+    
+    return data;
+  }
+
+  const [showAddTask, setShowAddTask] = useState(false);
+  const addTaskFormNTasks =         
+                  <> // 하나의 루트 태그만을 가진 컴포넌트가 리턴되어야 함.
+                          {
+                              showAddTask && <AddTask onAdd={addTask}/>
+                            }
+                            { tasks.length > 0 ? (
+                                <Tasks tasks={tasks} onDelete={deleteTask}
+                                    onToggle={toggleReminder} />
+                            ) : ('No Tasks to show')
+                            }
+                  </>
+  return (
+    
+      <div className="container">
+
+        {/* 헤더와 푸터는 무조건 표시됨. */}
+
+        <Router>
+          <Header onAdd={()=>setShowAddTask(!showAddTask)}
+                  showAdd={showAddTask}/>
+          <Routes>
+            <Route path='/' element={addTaskFormNTasks} />
+            <Route path='/about' element={<About />} />
+          </Routes>
+          <Footer />
+        </Router>
+        
+      </div>
+    
   );
 }
 
